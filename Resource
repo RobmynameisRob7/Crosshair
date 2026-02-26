@@ -1,0 +1,62 @@
+local player = game.Players.LocalPlayer
+local cam = workspace.CurrentCamera
+local run = game:GetService("RunService")
+
+-- ===== GUI CROSSHAIR =====
+local gui = Instance.new("ScreenGui")
+gui.Name = "CrosshairGUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local dot = Instance.new("Frame")
+dot.Parent = gui
+dot.AnchorPoint = Vector2.new(0.5,0.5)
+dot.Position = UDim2.new(0.5,0,0.5,0)
+dot.Size = UDim2.new(0,6,0,6)
+dot.BackgroundColor3 = Color3.fromRGB(255,40,40)
+dot.BorderSizePixel = 0
+
+local corner = Instance.new("UICorner",dot)
+corner.CornerRadius = UDim.new(1,0)
+
+local stroke = Instance.new("UIStroke",dot)
+stroke.Thickness = 1
+stroke.Color = Color3.fromRGB(0,0,0)
+
+-- ===== RAYCAST AIM CHECK =====
+local function isCharacter(model)
+	return model:FindFirstChild("Humanoid") ~= nil
+end
+
+run.RenderStepped:Connect(function()
+
+	if not cam then return end
+	
+	local origin = cam.CFrame.Position
+	local direction = cam.CFrame.LookVector * 500
+	
+	local params = RaycastParams.new()
+	params.FilterDescendantsInstances = {player.Character}
+	params.FilterType = Enum.RaycastFilterType.Blacklist
+	
+	local result = workspace:Raycast(origin,direction,params)
+	
+	if result and result.Instance then
+		local model = result.Instance:FindFirstAncestorOfClass("Model")
+		
+		if model and isCharacter(model) then
+			-- aim trúng player hoặc NPC
+			dot.BackgroundColor3 = Color3.fromRGB(0,255,120)
+			dot.Size = UDim2.new(0,8,0,8)
+		else
+			-- trúng vật thường
+			dot.BackgroundColor3 = Color3.fromRGB(255,40,40)
+			dot.Size = UDim2.new(0,6,0,6)
+		end
+	else
+		-- không trúng gì
+		dot.BackgroundColor3 = Color3.fromRGB(255,40,40)
+		dot.Size = UDim2.new(0,6,0,6)
+	end
+	
+end)
